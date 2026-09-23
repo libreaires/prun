@@ -14,7 +14,7 @@ end_program() {
     
 }
 
-clean_bash_history() {
+prun_bash_history() {
 
     echo "Removing bash history..."
 
@@ -25,7 +25,7 @@ clean_bash_history() {
 
 }
 
-clean_bambu_downloads() {
+prun_bambu_downloads() {
 
     echo "Removing temporary Bambu Studio files..."
 
@@ -34,7 +34,7 @@ clean_bambu_downloads() {
 
 }
 
-clean_tmp_folder() {
+prun_tmp_folder() {
 
     echo "Removing temporary files older than 7 days (a week)..."
 
@@ -42,7 +42,7 @@ clean_tmp_folder() {
 
 }
 
-clean_thumbs_folder() {
+prun_thumbs_folder() {
     
     echo "Removing .thumbs content..."
 
@@ -50,7 +50,7 @@ clean_thumbs_folder() {
 
 }
 
-clean_cache_folder() {
+prun_cache_folder() {
 
     echo "Cleaning .cache content older that 7 days (a week)..."
 
@@ -58,24 +58,56 @@ clean_cache_folder() {
 
 }
 
+prun_nix_garbage() {
+    
+    echo "Using nix-collect-garbage..."
+
+    sudo nix-collect-garbage --delete-older-than 7d
+
+}
+
+prun_nix() {
+
+    echo "Doing a nix system deep clean..."
+
+    sudo nix-env --profile /nix/var/nix/profiles/system --delete-generations old
+    nix-env --delete-generations old
+    home-manager remove-generations old
+
+}
+
+prun_nix_store() {
+
+    echo "Optimizing nix store..."
+
+    sudo nix-store --optimize
+
+}
+
 automatic_mode() {
 
     echo "Starting automatic_mode cleaning chain..."
 
-    clean_bash_history
-    clean_tmp_folder
-    clean_thumbs_folder
-    clean_cache_folder
-    clean_bambu_downloads
+    prun_bash_history
+    prun_tmp_folder
+    prun_thumbs_folder
+    prun_cache_folder
+    prun_nix
+    prun_nix_garbage
+    prun_nix_store
     end_program
 
 }
 
-echo "For now all this does is clean predefined folders and files... so be aware, as these are the things it's gonna clean:"
+echo "For now all this does is clean predefined folders and files..."
+echo "Due to that, it's required to be on a NixOS system, or remove the nix prunning function calls."
+echo "So be aware, as these are the things it's gonna prun (clean):"
 echo "Bash history"
 echo ".tmp Folder"
 echo ".thumbs Folder"
 echo ".cache Folder"
-echo "Also a predefined bambu studio downloads folder i have (i hate bambu studio btw), tho it's location has to be set as '~/Downloads/.bambudownloads'..."
+echo "Nix system"
+echo "Nix garbage"
+echo "Nix store"
 
 automatic_mode
